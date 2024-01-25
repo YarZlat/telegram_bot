@@ -75,7 +75,8 @@ def get_problem(message):
     headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
    
     ticket_input = {"input": {"name": "Ticket from " + nick, 
-                              "requesttypes_id": requesttypes_id, 
+                              "requesttypes_id": requesttypes_id,
+                              "_users_id_requester": 142,
                               "type": type_1,
                               "content": "Звернення з телеграму: \n" 
                               + "Робочий нік: " + nick + "\n" 
