@@ -13,7 +13,7 @@ def start(message):
     global markup
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton('До сервісдеску', url='https://servicedesk.jetmonsters.me/'))
-    markup.add(types.InlineKeyboardButton('Залишити запит', callback_data='send_task'))
+    markup.add(types.InlineKeyboardButton('Звернення у техпідтримку', callback_data='send_task'))
     bot.send_message(message.chat.id, 'Вас вітає бот техпідтримки JetMonsters!', reply_markup = markup)
 
 @bot.message_handler(commands=['servicedesk'])
@@ -22,19 +22,18 @@ def servicedesk(message):
 
 @bot.message_handler(commands=['task'])
 def task(message):
-    bot.send_message(message.chat.id, 'Введіть нік: ')
-    #nick = message.text.strip().lower
-    #bot.reply_to(message, nick)
+    bot.send_message(message.chat.id, 'Введіть робочий нік: ')
+    bot.register_next_step_handler(message, nickname)
 
 @bot.callback_query_handler(func=lambda callback: True)
 def send_task(callback):
     if callback.data == 'send_task':
-        bot.send_message(callback.message.chat.id, 'Введіть нік: ')
+        bot.send_message(callback.message.chat.id, 'Введіть робочий нік: ')
         bot.register_next_step_handler(callback.message, nickname)
 def nickname(message):
     global nick
     nick = message.text
-    bot.send_message(message.chat.id, 'Введіть пошту:')
+    bot.send_message(message.chat.id, 'Введіть робочу пошту:')
     bot.register_next_step_handler(message, mailbox)
 def mailbox(message):
     global mail 
@@ -78,7 +77,12 @@ def get_problem(message):
     ticket_input = {"input": {"name": "Ticket from " + nick, 
                               "requesttypes_id": requesttypes_id, 
                               "type": type_1,
-                              "content": "Звернення з телеграму: \n" + nick + "\n" + mail + "\n" + phone + "\n" + problem}}
+                              "content": "Звернення з телеграму: \n" 
+                              + "Робочий нік: " + nick + "\n" 
+                              + "Контакт у телеграмі: " + str(message.from_user.first_name) + "\n" 
+                              + "Пошта: " + mail + "\n" 
+                              + "Телефон: " + phone + "\n" 
+                              + "Опис проблеми: " + problem}}
 
     ticket_uri = 'Ticket'
     post_ticket = requests.post(url="{}{}".format(base_url,ticket_uri), headers=headers, data=json.dumps(ticket_input))
