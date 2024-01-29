@@ -13,13 +13,13 @@ bot = telebot.TeleBot(os.getenv('TOKEN'))
 def start(message):
     global markup
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton('До сервісдеску', url='https://servicedesk.jetmonsters.me/'))
+    markup.add(types.InlineKeyboardButton('До сервісдеску', url=os.getenv('URL')))
     markup.add(types.InlineKeyboardButton('Звернення у техпідтримку', callback_data='send_task'))
     bot.send_message(message.chat.id, 'Вас вітає бот техпідтримки JetMonsters!', reply_markup = markup)
 
 @bot.message_handler(commands=['servicedesk'])
 def servicedesk(message):
-    bot.send_message(message.chat.id, 'https://servicedesk.jetmonsters.me/')
+    bot.send_message(message.chat.id, os.getenv('URL'))
 
 @bot.message_handler(commands=['task'])
 def task(message):
@@ -60,7 +60,7 @@ def get_problem(message):
     bot.send_message(message.chat.id, problem)
     
 #creating task
-    base_url = os.getenv('URL')
+    base_url = os.getenv('URL_API')
     app_token = os.getenv('A_TOKEN')
     user_token = os.getenv('U_TOKEN')
     requesttypes_id = 8
