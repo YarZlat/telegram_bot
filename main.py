@@ -1,12 +1,13 @@
 import telebot
 from telebot import types
-#import glpi_api
 import json
 import requests
 from validate_email import validate_email
+from dotenv import load_dotenv
+import os
 
-bot = telebot.TeleBot('6611060583:AAEI3cyf_7h7NCb4_3_r0wz_AuvXV_EGnAM')
-
+load_dotenv()
+bot = telebot.TeleBot(os.getenv('TOKEN'))
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -38,14 +39,12 @@ def nickname(message):
 def mailbox(message):
     global mail 
     mail = message.text
-    print(mail)
     print(validate_email(mail))
     if validate_email(mail):
         bot.send_message(message.chat.id, 'Введіть телефон:')
         bot.register_next_step_handler(message, telephone)
     else:
         bot.send_message(message.chat.id, 'Такої пошти не існує.', reply_markup = markup)
-#        bot.register_next_step_handler(message, nickname)
 def telephone(message):
     global phone
     phone = message.text
@@ -59,10 +58,11 @@ def get_problem(message):
     bot.send_message(message.chat.id, mail)
     bot.send_message(message.chat.id, phone)
     bot.send_message(message.chat.id, problem)
+    
 #creating task
-    base_url = 'https://servicedesk.jetmonsters.me/apirest.php/'
-    app_token = 'VdrRJ55LZfo82Fb6uMfOlhaozeFk5fNxqPFMNa12'
-    user_token = 'YwfZ2Nlr2KAd4umsLsSDGuDUb3VshZxUEltJswnI'
+    base_url = os.getenv('URL')
+    app_token = os.getenv('A_TOKEN')
+    user_token = os.getenv('U_TOKEN')
     requesttypes_id = 8
     type_1 = 1
 
@@ -70,7 +70,6 @@ def get_problem(message):
     response = requests.get(url="{}{}".format(base_url,init_uri), params={"Content-Type": "application/json","user_token": user_token})
     session_token = response.json()
     session_token = session_token['session_token']
-    print(session_token)
 
     headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
    
@@ -89,12 +88,10 @@ def get_problem(message):
     post_ticket = requests.post(url="{}{}".format(base_url,ticket_uri), headers=headers, data=json.dumps(ticket_input))
     pt = post_ticket.json()
     pt = pt['id']
-    print(pt)
     bot.send_message(message.chat.id, 'Тікет створено, номер: ' + str(pt) + '\n' + 'Очікуйте вирішення вашого звернення.' + '\n' + 'До побачення!', reply_markup = markup)
 
     kill_uri = 'killSession'
     kill_headers = {'Content-Type': 'application/json','App-Token': app_token,'Session-Token': session_token}
     kill_session = requests.get(url="{}{}".format(base_url,kill_uri), headers=kill_headers)
-    print(kill_session.text)
 
 bot.polling(non_stop=True, interval=0)
