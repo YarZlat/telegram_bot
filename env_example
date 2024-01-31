@@ -1,0 +1,7 @@
+# everything placed without ''
+
+TOKEN = 'place your bot token here'
+URL = 'place your base url here'
+URL_API = 'place you api url here'
+A_TOKEN = 'place your application token here'
+U_TOKEN = 'place your user token here'
