@@ -1,3 +1,5 @@
+#for testing mail validation
+
 from validate_email import validate_email
 
 mail = 'discipler7@gmail.com'
