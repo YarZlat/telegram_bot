@@ -1,4 +1,4 @@
-#version with dictionary handlers
+#test mail search
 
 import requests
 from dotenv import load_dotenv
@@ -15,11 +15,19 @@ session_token = response.json()
 session_token = session_token['session_token']
 headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
 
-mail = 'cetan@jetmonsters.me'   
-ticket_uri = 'User/10'
+mail = 'zxc@jetmonsters.me'
+ticket_uri = '/search/User?criteria[0][field]=5&criteria[0][searchtype]=contains&criteria[0][value]=' + mail + '&forcedisplay[0]=1&forcedisplay[1]=2&forcedisplay[2]=5&forcedisplay[3]=9&forcedisplay[4]=14&forcedisplay[5]=80'
 post_ticket = requests.get(url="{}{}".format(base_url,ticket_uri), headers=headers)
 pt = post_ticket.json()
-print(pt)
+if pt['totalcount'] > 0: 
+    pt = pt['data']
+    pt = pt[0]
+    user_id = pt['2']
+    print('UserID = ', user_id)
+else:
+    user_id = 142
+    print('Not found, setting UserID =', user_id)
+
 
 kill_uri = 'killSession'
 kill_headers = {'Content-Type': 'application/json','App-Token': app_token,'Session-Token': session_token}

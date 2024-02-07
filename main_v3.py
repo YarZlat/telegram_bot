@@ -21,6 +21,7 @@ class User:
         self.phone = None
         self.tg_nick = None
         self.problem = None
+        self.user_id = None
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -55,7 +56,7 @@ def mailbox(message):
     chat_id = message.chat.id 
     mail = message.text
     user = user_dict[chat_id]
-    user.mail = mail
+    user.mail = str(mail).lower()
     if validate_email(mail):
         bot.send_message(message.chat.id, 'Введіть телефон:')
         bot.register_next_step_handler(message, telephone)
@@ -95,14 +96,21 @@ def get_problem(message):
 
     headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
    
-    ticket_uri = 'User/10/Useremail'
+    ticket_uri = '/search/User?criteria[0][field]=5&criteria[0][searchtype]=contains&criteria[0][value]=' + user.mail + '&forcedisplay[0]=1&forcedisplay[1]=2&forcedisplay[2]=5&forcedisplay[3]=9&forcedisplay[4]=14&forcedisplay[5]=80'
     post_ticket = requests.get(url="{}{}".format(base_url,ticket_uri), headers=headers)
     pt = post_ticket.json()
-    print(pt)
+    if pt['totalcount'] > 0: 
+        pt = pt['data']
+        pt = pt[0]
+        user.user_id = pt['2']
+#        print('UserID = ', user.user_id)
+    else:
+        user.user_id = 142
+#        print('Not found, setting UserID =', user_id)
 
     ticket_input = {"input": {"name": "Ticket from " + user.nick, 
                               "requesttypes_id": requesttypes_id,
-                              "_users_id_requester": 142, #request user in GLPI - Bot_t1
+                              "_users_id_requester": user.user_id, #request user in GLPI 
                               "type": type_1, #ticket type Incident in GLPI
                               "content": "Звернення з телеграму: \n" 
                               + "Робочий нік: " + user.nick + "\n" 
