@@ -8,6 +8,8 @@ from validate_email import validate_email
 from dotenv import load_dotenv
 import os
 from datetime import date
+from html2text import html2text
+import html
 
 load_dotenv()
 bot = telebot.TeleBot(os.getenv('TOKEN'))
@@ -29,6 +31,7 @@ def start(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton('До сервісдеску', url=os.getenv('URL')))
     markup.add(types.InlineKeyboardButton('Звернення у техпідтримку', callback_data='send_task'))
+    markup.add(types.InlineKeyboardButton('Перевірити рішення', callback_data='task_solution'))
     bot.send_message(message.chat.id, 'Вас вітає бот техпідтримки JetMonsters!', reply_markup = markup)
 
 @bot.message_handler(commands=['servicedesk'])
@@ -40,11 +43,20 @@ def task(message):
     bot.send_message(message.chat.id, 'Введіть робочий нік: ')
     bot.register_next_step_handler(message, nickname)
 
+@bot.message_handler(commands=['solution'])
+def solutionk(message):
+    bot.send_message(message.chat.id, 'Введіть номер таска: ')
+    bot.register_next_step_handler(message, task_id)
+
 @bot.callback_query_handler(func=lambda callback: True)
 def send_task(callback):
     if callback.data == 'send_task':
         bot.send_message(callback.message.chat.id, 'Введіть робочий нік: ')
         bot.register_next_step_handler(callback.message, nickname)
+    if callback.data == 'task_solution':
+        bot.send_message(callback.message.chat.id, 'Введіть номер таска: ')
+        bot.register_next_step_handler(callback.message, task_id)
+    
 def nickname(message):
     chat_id = message.chat.id
     nick = message.text
@@ -128,6 +140,41 @@ def get_problem(message):
     kill_uri = 'killSession'
     kill_headers = {'Content-Type': 'application/json','App-Token': app_token,'Session-Token': session_token}
     kill_session = requests.get(url="{}{}".format(base_url,kill_uri), headers=kill_headers)
+
+def task_id(message):
+    base_url = os.getenv('URL_API')
+    app_token = os.getenv('A_TOKEN')
+    user_token = os.getenv('U_TOKEN')
+    init_uri = 'initSession'
+    response = requests.get(url="{}{}".format(base_url,init_uri), params={"Content-Type": "application/json","user_token": user_token})
+    session_token = response.json()
+    session_token = session_token['session_token']
+    headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
+
+    chat_id = message.chat.id
+    ticket_id = message.text
+
+    ticket_uri = 'Ticket/' + str(ticket_id) + '/ITILSolution/'
+    print(ticket_uri)
+    post_ticket = requests.get(url="{}{}".format(base_url,ticket_uri), headers=headers)
+    if post_ticket:
+        pt = post_ticket.json()
+        if pt:
+            pt = pt[0]
+            pt = pt['content']
+            pt = html.unescape(pt)
+            pt = html2text(pt)
+            bot.send_message(chat_id, pt, reply_markup = markup)
+        else:
+            bot.send_message(chat_id,'Ще не вирішено', reply_markup = markup)
+    else:
+        bot.send_message(chat_id,'Рішення немає', reply_markup = markup)
+
+    kill_uri = 'killSession'
+    kill_headers = {'Content-Type': 'application/json','App-Token': app_token,'Session-Token': session_token}
+    kill_session = requests.get(url="{}{}".format(base_url,kill_uri), headers=kill_headers)
+       
+
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 
