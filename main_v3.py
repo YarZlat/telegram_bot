@@ -108,7 +108,7 @@ def get_problem(message):
 
     headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
    
-    ticket_uri = '/search/User?criteria[0][field]=5&criteria[0][searchtype]=contains&criteria[0][value]=' + user.mail + '&forcedisplay[0]=1&forcedisplay[1]=2&forcedisplay[2]=5&forcedisplay[3]=9&forcedisplay[4]=14&forcedisplay[5]=80'
+    ticket_uri = '/search/User?criteria[0][field]=5&criteria[0][searchtype]=contains&criteria[0][value]=' + user.mail + '&forcedisplay[0]=1&forcedisplay[1]=2&forcedisplay[2]=5&forcedisplay[3]=9'
     post_ticket = requests.get(url="{}{}".format(base_url,ticket_uri), headers=headers)
     pt = post_ticket.json()
     if pt['totalcount'] > 0: 

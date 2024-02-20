@@ -17,7 +17,7 @@ session_token = response.json()
 session_token = session_token['session_token']
 headers = {"Session-Token":session_token, "App-Token":app_token, "Content-Type": "application/json"}
 
-ticket_id = 565
+ticket_id = 676
 
 ticket_uri = 'Ticket/' + str(ticket_id) + '/ITILSolution/'
 print(ticket_uri)
@@ -26,7 +26,8 @@ if post_ticket:
     pt = post_ticket.json()
     if pt:
         pt = pt[0]
-        pt = pt['content']
+        print(pt)
+#        pt = pt['content']
         pt = html.unescape(pt)
         pt = html2text(pt)
         print(pt)
